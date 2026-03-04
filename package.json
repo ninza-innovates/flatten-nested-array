@@ -1,0 +1,16 @@
+{
+  "name": "flatten-nested-array",
+  "version": "1.0.0",
+  "description": "Production-ready implementation to flatten arbitrarily nested arrays of integers.",
+  "main": "src/flattenArray.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node src/flattenArray.js"
+  },
+  "keywords": ["flatten", "array", "recursion", "algorithm"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
