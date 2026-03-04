@@ -13,8 +13,8 @@ describe("flattenArray", () => {
     expect(flattenArray([])).toEqual([]);
   });
 
-  test("handles single element", () => {
-    expect(flattenArray([5])).toEqual([5]);
+  test("handles negative integers", () => {
+    expect(flattenArray([[1, -2, [3]]])).toEqual([1, -2, 3]);
   });
 
   test("throws error for invalid input type", () => {

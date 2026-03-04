@@ -1,9 +1,8 @@
 /**
  * Flattens an arbitrarily nested array of integers.
  *
- * @param {Array<number | Array>} arr - Nested array of integers
- * @returns {number[]} A flat array of integers
- * @throws {TypeError} If input is invalid
+ * @param {Array<number | Array>} arr
+ * @returns {number[]}
  */
 function flattenArray(arr) {
   if (!Array.isArray(arr)) {
@@ -32,8 +31,29 @@ function flattenArray(arr) {
 
 module.exports = flattenArray;
 
-// Allow manual run with `npm start`
+/**
+ * Interactive CLI Mode
+ */
 if (require.main === module) {
-  const example = [[1, 2, [3]], 4];
-  console.log(flattenArray(example));
+  const readline = require("readline");
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  rl.question(
+    'Enter a nested array (example: [[1,2,[3]],4]): ',
+    (answer) => {
+      try {
+        const parsedInput = JSON.parse(answer);
+        const result = flattenArray(parsedInput);
+        console.log("Flattened Result:", result);
+      } catch (error) {
+        console.error("Error:", error.message);
+      } finally {
+        rl.close();
+      }
+    }
+  );
 }
