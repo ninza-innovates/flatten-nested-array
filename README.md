@@ -1,5 +1,7 @@
 # Flatten Nested Array
 
+[![CI](https://github.com/ninza-innovates/flatten-nested-array/actions/workflows/ci.yml/badge.svg)](https://github.com/ninza-innovates/flatten-nested-array/actions/workflows/ci.yml)
+
 A production-ready Node.js implementation to flatten an arbitrarily
 nested array of integers into a single flat array.
 
