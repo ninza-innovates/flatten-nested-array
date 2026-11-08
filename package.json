@@ -8,7 +8,7 @@
     "start": "node src/flattenArray.js"
   },
   "keywords": ["flatten", "array", "recursion", "algorithm"],
-  "author": "Your Name",
+  "author": "ninza-innovates",
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.0.0"
