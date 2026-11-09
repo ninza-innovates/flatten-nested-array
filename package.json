@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Production-ready implementation to flatten arbitrarily nested arrays of integers.",
   "main": "src/flattenArray.js",
+  "types": "src/flattenArray.d.ts",
   "scripts": {
     "test": "jest",
     "start": "node src/flattenArray.js"
