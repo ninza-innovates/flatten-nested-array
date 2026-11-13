@@ -101,9 +101,47 @@ describe("values outside the integer contract", () => {
     ["a numeric string", "1"],
     ["a bigint", 1n],
     ["a boxed number", Object(1)],
+    ["a typed array", new Int32Array([2])],
+    ["a date", new Date(0)],
+    ["a function", () => 1],
+    ["a symbol", Symbol("1")],
   ])("throws TypeError when a nested value is %s", (_label, value) => {
     expect(() => flattenArray([0, [value]])).toThrow(
       new TypeError("Array must contain only integers or nested arrays")
     );
+  });
+
+  test("throws TypeError when a sparse hole is encountered", () => {
+    expect(() => flattenArray([1, , 2])).toThrow(
+      new TypeError("Array must contain only integers or nested arrays")
+    );
+  });
+});
+
+describe("values the integer contract keeps", () => {
+  test("preserves duplicate integers in encounter order", () => {
+    expect(flattenArray([1, [1, [1]], 1])).toEqual([1, 1, 1, 1]);
+  });
+
+  test("flattens one integer wrapped many levels deep", () => {
+    expect(flattenArray([[[[7]]]])).toEqual([7]);
+  });
+
+  test("preserves negative zero distinct from zero", () => {
+    const result = flattenArray([-0, [0, [-0]]]);
+
+    expect(result).toHaveLength(3);
+    expect(Object.is(result[0], -0)).toBe(true);
+    expect(Object.is(result[1], 0)).toBe(true);
+    expect(Object.is(result[2], -0)).toBe(true);
+  });
+
+  test("flattens array subclasses the same way as plain arrays", () => {
+    class IntList extends Array {}
+    const inner = new IntList(2, 3);
+    const outer = new IntList(1, inner, 4);
+
+    expect(flattenArray(outer)).toEqual([1, 2, 3, 4]);
+    expect(outer).toEqual(new IntList(1, inner, 4));
   });
 });
