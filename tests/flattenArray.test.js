@@ -145,3 +145,35 @@ describe("values the integer contract keeps", () => {
     expect(outer).toEqual(new IntList(1, inner, 4));
   });
 });
+
+describe("circular references", () => {
+  test("throws TypeError when an array contains itself", () => {
+    const input = [1, 2];
+    input.push(input);
+
+    expect(() => flattenArray(input)).toThrow(
+      new TypeError("Array must not contain circular references")
+    );
+    expect(input).toHaveLength(3);
+    expect(input[0]).toBe(1);
+    expect(input[1]).toBe(2);
+    expect(input[2]).toBe(input);
+  });
+
+  test("throws TypeError when a nested array refers to an ancestor", () => {
+    const inner = [2];
+    const outer = [1, inner];
+    inner.push(outer);
+
+    expect(() => flattenArray(outer)).toThrow(
+      new TypeError("Array must not contain circular references")
+    );
+  });
+
+  test("flattens a nested array that is reused without forming a cycle", () => {
+    const inner = [1, [2]];
+
+    expect(flattenArray([inner, 3, inner])).toEqual([1, 2, 3, 1, 2]);
+    expect(inner).toEqual([1, [2]]);
+  });
+});

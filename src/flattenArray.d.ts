@@ -14,6 +14,9 @@
  * @throws {TypeError} If `arr` is not an array (`"Input must be an array"`).
  * @throws {TypeError} If a nested value is neither an integer nor an array
  * (`"Array must contain only integers or nested arrays"`).
+ * @throws {TypeError} If an array refers back to itself through the current
+ * path (`"Array must not contain circular references"`). The same nested
+ * array may still appear in more than one place.
  * @example
  * flattenArray([[1, 2, [3]], 4]);
  * // => [1, 2, 3, 4]

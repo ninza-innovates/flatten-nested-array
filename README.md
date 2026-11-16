@@ -56,6 +56,57 @@ npm install
 
 ------------------------------------------------------------------------
 
+## 📖 Usage
+
+`flattenArray` is exported from `src/flattenArray.js`. Requiring the module
+does not start the interactive prompt.
+
+``` javascript
+const flattenArray = require("./src/flattenArray");
+
+flattenArray([[1, 2, [3]], 4]);
+// [1, 2, 3, 4]
+
+flattenArray([1, [2, [3, [4, [5]]]]]);
+// [1, 2, 3, 4, 5]
+
+flattenArray([[-1, 0, [-3]], 4]);
+// [-1, 0, -3, 4]
+
+const input = [1, [], [2, [[]]]];
+const flat = flattenArray(input);
+// flat is [1, 2]
+// input is still [1, [], [2, [[]]]]
+```
+
+Values that are not integers, and arrays that loop back to an ancestor,
+throw `TypeError`:
+
+``` javascript
+flattenArray("nope");
+// TypeError: Input must be an array
+
+flattenArray([1, [2.5]]);
+// TypeError: Array must contain only integers or nested arrays
+
+const cycle = [1];
+cycle.push(cycle);
+flattenArray(cycle);
+// TypeError: Array must not contain circular references
+```
+
+A nested array can appear in more than one place:
+
+``` javascript
+const inner = [1, [2]];
+flattenArray([inner, 3, inner]);
+// [1, 2, 3, 1, 2]
+```
+
+TypeScript callers are typed by `src/flattenArray.d.ts`.
+
+------------------------------------------------------------------------
+
 ## ▶️ Running the Application
 
 To run the application in interactive mode:
@@ -145,12 +196,17 @@ Expected output:
     flatten-nested-array/
     │
     ├── src/
-    │   └── flattenArray.js
+    │   ├── flattenArray.js
+    │   └── flattenArray.d.ts
     │
     ├── tests/
-    │   └── flattenArray.test.js
+    │   ├── flattenArray.test.js
+    │   └── cli.test.js
     │
+    ├── .github/workflows/ci.yml
+    ├── LICENSE
     ├── package.json
+    ├── package-lock.json
     ├── .gitignore
     └── README.md
 
@@ -162,6 +218,7 @@ The solution uses a recursive strategy:
 
 -   If the element is an integer → push it to the result\
 -   If the element is an array → recursively process it\
+-   If an array refers back to an ancestor → throw a TypeError\
 -   If invalid data is encountered → throw a TypeError
 
 The core flattening logic is separated from the CLI interface to
@@ -189,4 +246,5 @@ Where `n` is the total number of elements across all nested arrays.
 
 -   Input must be valid JSON format\
 -   Only integers are supported\
+-   Circular references throw a TypeError\
 -   Designed to follow production-quality coding standards

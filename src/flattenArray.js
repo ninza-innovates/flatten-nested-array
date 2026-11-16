@@ -19,6 +19,9 @@
  * @throws {TypeError} If `arr` is not an array ("Input must be an array").
  * @throws {TypeError} If a nested value is neither an integer nor an array
  * ("Array must contain only integers or nested arrays").
+ * @throws {TypeError} If an array refers back to itself through the current
+ * path ("Array must not contain circular references"). The same nested array
+ * may still appear in more than one place.
  * @example
  * flattenArray([[1, 2, [3]], 4]);
  * // => [1, 2, 3, 4]
@@ -29,8 +32,14 @@ function flattenArray(arr) {
   }
 
   const result = [];
+  const ancestors = new WeakSet();
 
   function helper(element) {
+    if (ancestors.has(element)) {
+      throw new TypeError("Array must not contain circular references");
+    }
+
+    ancestors.add(element);
     for (const item of element) {
       if (Array.isArray(item)) {
         helper(item);
@@ -42,6 +51,7 @@ function flattenArray(arr) {
         );
       }
     }
+    ancestors.delete(element);
   }
 
   helper(arr);
