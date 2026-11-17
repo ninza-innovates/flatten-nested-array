@@ -204,6 +204,7 @@ Expected output:
     │   └── cli.test.js
     │
     ├── .github/workflows/ci.yml
+    ├── CONTRIBUTING.md
     ├── LICENSE
     ├── package.json
     ├── package-lock.json
@@ -239,6 +240,12 @@ Where `n` is the total number of elements across all nested arrays.
 
 -   Node.js\
 -   Jest
+
+------------------------------------------------------------------------
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to run the tests, and the behavior a change should preserve.
 
 ------------------------------------------------------------------------
 
