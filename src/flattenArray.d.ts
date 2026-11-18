@@ -3,7 +3,8 @@
  *
  * Integers are collected from left to right. The input is not mutated, empty
  * arrays at any depth contribute no values, and successive calls do not
- * share state.
+ * share state. Nesting is walked with an explicit stack, so depth is not
+ * limited by the call stack.
  *
  * @param arr - An arbitrarily nested array of integers. The runtime value
  *   must be a real array (array-like objects are rejected). Each leaf must
