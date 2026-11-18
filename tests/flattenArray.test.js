@@ -49,6 +49,28 @@ describe("deep and irregular nesting", () => {
       1, 2, 3, 4, 5, 6, 7,
     ]);
   });
+
+  test("flattens a chain deeper than the call stack allows", () => {
+    const depth = 25000;
+    let input = 1;
+    for (let i = 0; i < depth; i++) {
+      input = [input];
+    }
+
+    expect(flattenArray(input)).toEqual([1]);
+  });
+
+  test("rejects a cycle at the bottom of a deep chain", () => {
+    let input = [];
+    input.push(input);
+    for (let i = 0; i < 25000; i++) {
+      input = [input];
+    }
+
+    expect(() => flattenArray(input)).toThrow(
+      new TypeError("Array must not contain circular references")
+    );
+  });
 });
 
 describe("supported non-array values", () => {

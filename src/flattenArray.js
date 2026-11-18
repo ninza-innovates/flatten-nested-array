@@ -12,7 +12,8 @@
  *
  * Integers are collected from left to right. The input is not mutated, empty
  * arrays at any depth contribute no values, and successive calls do not
- * share state.
+ * share state. Nesting is walked with an explicit stack, so depth is not
+ * limited by the call stack.
  *
  * @param {NestedIntegerArray} arr An arbitrarily nested array of integers.
  * @returns {number[]} A new array of the integers from `arr`, in encounter order.
@@ -33,28 +34,37 @@ function flattenArray(arr) {
 
   const result = [];
   const ancestors = new WeakSet();
+  const stack = [{ array: arr, index: 0 }];
+  ancestors.add(arr);
 
-  function helper(element) {
-    if (ancestors.has(element)) {
-      throw new TypeError("Array must not contain circular references");
+  while (stack.length > 0) {
+    const frame = stack[stack.length - 1];
+    const { array } = frame;
+
+    if (frame.index >= array.length) {
+      ancestors.delete(array);
+      stack.pop();
+      continue;
     }
 
-    ancestors.add(element);
-    for (const item of element) {
-      if (Array.isArray(item)) {
-        helper(item);
-      } else if (Number.isInteger(item)) {
-        result.push(item);
-      } else {
-        throw new TypeError(
-          "Array must contain only integers or nested arrays"
-        );
+    const item = array[frame.index];
+    frame.index += 1;
+
+    if (Array.isArray(item)) {
+      if (ancestors.has(item)) {
+        throw new TypeError("Array must not contain circular references");
       }
+      ancestors.add(item);
+      stack.push({ array: item, index: 0 });
+    } else if (Number.isInteger(item)) {
+      result.push(item);
+    } else {
+      throw new TypeError(
+        "Array must contain only integers or nested arrays"
+      );
     }
-    ancestors.delete(element);
   }
 
-  helper(arr);
   return result;
 }
 

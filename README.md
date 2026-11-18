@@ -215,10 +215,11 @@ Expected output:
 
 ## 🧠 Approach
 
-The solution uses a recursive strategy:
+The solution walks the input with an explicit stack, so nesting is not
+limited by the call stack:
 
 -   If the element is an integer → push it to the result\
--   If the element is an array → recursively process it\
+-   If the element is an array → visit it next\
 -   If an array refers back to an ancestor → throw a TypeError\
 -   If invalid data is encountered → throw a TypeError
 

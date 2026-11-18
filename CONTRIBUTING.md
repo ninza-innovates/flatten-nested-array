@@ -26,7 +26,7 @@ npm install
 npm test
 ```
 
-Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting, empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout and stderr.
+Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout and stderr.
 
 Add or update a test when you change behavior. `npm test` should pass before you open a pull request.
 
