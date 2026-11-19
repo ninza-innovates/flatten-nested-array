@@ -103,7 +103,45 @@ flattenArray([inner, 3, inner]);
 // [1, 2, 3, 1, 2]
 ```
 
-TypeScript callers are typed by `src/flattenArray.d.ts`.
+------------------------------------------------------------------------
+
+## 📘 API
+
+### `flattenArray(arr)`
+
+``` javascript
+flattenArray(arr) // => number[]
+```
+
+Returns a new array of the integers in `arr`, from left to right. `arr` may
+contain integers and arrays nested to any depth, including empty arrays.
+Empty arrays contribute no values. The input is not mutated, and later
+calls do not reuse an earlier result.
+
+`arr` must be a real array. Array-like objects are rejected. Array
+subclasses are flattened the same way as plain arrays. A leaf is kept only
+when `Number.isInteger` is true, including `0`, negative integers, and the
+safe integer bounds. Fractional numbers, `NaN`, `Infinity`, strings,
+`null`, `undefined`, booleans, bigints, and sparse holes throw.
+
+`flattenArray` throws `TypeError` in three cases:
+
+-   `arr` is not an array — `Input must be an array`
+-   A nested value is neither an integer nor an array —\
+    `Array must contain only integers or nested arrays`
+-   An array refers back to an ancestor on the path currently\
+    being walked — `Array must not contain circular references`
+
+The same nested array may appear in more than one place. Each appearance
+is flattened. Only a reference back to an ancestor is circular.
+
+Nesting is walked with an explicit stack, so depth is limited by memory
+rather than the call stack.
+
+TypeScript callers are typed by `src/flattenArray.d.ts`. The input type is
+`flattenArray.NestedIntegerArray`. TypeScript has no integer type, so
+leaves are declared as `number`; the runtime still requires
+`Number.isInteger`.
 
 ------------------------------------------------------------------------
 
