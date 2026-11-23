@@ -73,14 +73,17 @@ flattenArray([1, [2, [3, [4, [5]]]]]);
 flattenArray([[-1, 0, [-3]], 4]);
 // [-1, 0, -3, 4]
 
+flattenArray([1, [2, [3, [4]]]], 1);
+// [1, 2, [3, [4]]]
+
 const input = [1, [], [2, [[]]]];
 const flat = flattenArray(input);
 // flat is [1, 2]
 // input is still [1, [], [2, [[]]]]
 ```
 
-Values that are not integers, and arrays that loop back to an ancestor,
-throw `TypeError`:
+Values that are not integers, arrays that loop back to an ancestor, and an
+invalid depth throw `TypeError`:
 
 ``` javascript
 flattenArray("nope");
@@ -93,6 +96,9 @@ const cycle = [1];
 cycle.push(cycle);
 flattenArray(cycle);
 // TypeError: Array must not contain circular references
+
+flattenArray([1, [2]], -1);
+// TypeError: Depth must be a non-negative integer or Infinity
 ```
 
 A nested array can appear in more than one place:
@@ -107,41 +113,62 @@ flattenArray([inner, 3, inner]);
 
 ## 📘 API
 
-### `flattenArray(arr)`
+### `flattenArray(arr, depth = Infinity)`
 
 ``` javascript
-flattenArray(arr) // => number[]
+flattenArray(arr, depth) // => Array<number | array>
 ```
 
-Returns a new array of the integers in `arr`, from left to right. `arr` may
-contain integers and arrays nested to any depth, including empty arrays.
-Empty arrays contribute no values. The input is not mutated, and later
+Returns a new array of the integers in `arr`, from left to right, flattening
+at most `depth` levels. `depth` defaults to `Infinity`, which flattens every
+level, so a one-argument call keeps the previous behavior. `arr` may contain
+integers and arrays nested to any depth, including empty arrays. Empty arrays
+that are flattened contribute no values. The input is not mutated, and later
 calls do not reuse an earlier result.
 
-`arr` must be a real array. Array-like objects are rejected. Array
-subclasses are flattened the same way as plain arrays. A leaf is kept only
-when `Number.isInteger` is true, including `0`, negative integers, and the
-safe integer bounds. Fractional numbers, `NaN`, `Infinity`, strings,
-`null`, `undefined`, booleans, bigints, and sparse holes throw.
+`depth` must be a non-negative integer or `Infinity`. `0` copies the top
+level only. A nested array left in the result is the same array that was
+passed in; its contents are not validated. Fractional, negative, and
+non-numeric depths throw.
 
-`flattenArray` throws `TypeError` in three cases:
+`arr` must be a real array. Array-like objects are rejected. Array
+subclasses are flattened the same way as plain arrays. A visited leaf is
+kept only when `Number.isInteger` is true, including `0`, negative integers,
+and the safe integer bounds. Fractional numbers, `NaN`, `Infinity`, strings,
+`null`, `undefined`, booleans, bigints, and sparse holes throw when they are
+visited. Values nested deeper than `depth` are not visited.
+
+`flattenArray` throws `TypeError` in four cases:
 
 -   `arr` is not an array — `Input must be an array`
--   A nested value is neither an integer nor an array —\
+-   `depth` is not a non-negative integer or `Infinity` —\
+    `Depth must be a non-negative integer or Infinity`
+-   A visited value is neither an integer nor an array —\
     `Array must contain only integers or nested arrays`
--   An array refers back to an ancestor on the path currently\
+-   An entered array refers back to an ancestor on the path currently\
     being walked — `Array must not contain circular references`
 
 The same nested array may appear in more than one place. Each appearance
-is flattened. Only a reference back to an ancestor is circular.
+that is entered is flattened. Only a reference back to an ancestor is
+circular. A cycle deeper than `depth` is left in place.
 
-Nesting is walked with an explicit stack, so depth is limited by memory
+``` javascript
+flattenArray([1, [2, [3, [4]]]], 1);
+// [1, 2, [3, [4]]]
+
+flattenArray([1, [2, [3, [4]]]], 0);
+// [1, [2, [3, [4]]]]
+```
+
+Nesting is walked with an explicit stack, so nesting is limited by memory
 rather than the call stack.
 
 TypeScript callers are typed by `src/flattenArray.d.ts`. The input type is
 `flattenArray.NestedIntegerArray`. TypeScript has no integer type, so
 leaves are declared as `number`; the runtime still requires
-`Number.isInteger`.
+`Number.isInteger` for every leaf it visits. Passing `depth` types the
+result as an array that may still contain nested arrays. Omitting `depth`
+types the result as `number[]`.
 
 ------------------------------------------------------------------------
 
@@ -257,7 +284,8 @@ The solution walks the input with an explicit stack, so nesting is not
 limited by the call stack:
 
 -   If the element is an integer → push it to the result\
--   If the element is an array → visit it next\
+-   If the element is an array and the depth limit allows it → visit it next\
+-   If a nested array sits past the depth limit → keep that array\
 -   If an array refers back to an ancestor → throw a TypeError\
 -   If invalid data is encountered → throw a TypeError
 
@@ -268,10 +296,11 @@ maintain testability and clean design.
 
 ## ⏱ Complexity
 
-**Time Complexity:** O(n)\
-**Space Complexity:** O(n)
+**Time Complexity:** O(v)\
+**Space Complexity:** O(v)
 
-Where `n` is the total number of elements across all nested arrays.
+Where `v` is the number of values visited. A full flatten visits every
+element. A finite `depth` stops once that many levels are flattened.
 
 ------------------------------------------------------------------------
 
@@ -291,6 +320,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to run the tests, and the 
 ## 📌 Notes
 
 -   Input must be valid JSON format\
--   Only integers are supported\
--   Circular references throw a TypeError\
+-   Only integers are supported at levels the walk visits\
+-   An optional depth limits how many levels are flattened\
+-   Circular references throw a TypeError when they are entered\
 -   Designed to follow production-quality coding standards
