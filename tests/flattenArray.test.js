@@ -199,3 +199,138 @@ describe("circular references", () => {
     expect(inner).toEqual([1, [2]]);
   });
 });
+
+describe("optional depth", () => {
+  const input = [1, [2, [3, [4]]], 5];
+
+  test("defaults to flattening every level", () => {
+    expect(flattenArray(input)).toEqual([1, 2, 3, 4, 5]);
+    expect(flattenArray(input, undefined)).toEqual([1, 2, 3, 4, 5]);
+    expect(flattenArray(input, Infinity)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  test("matches Array.prototype.flat for dense integer arrays", () => {
+    for (const depth of [0, 1, 2, 3, 10, Infinity]) {
+      expect(flattenArray(input, depth)).toEqual(input.flat(depth));
+    }
+  });
+
+  test("stops after the requested number of levels", () => {
+    const kept = [4];
+    const source = [1, [2, [3, kept]]];
+
+    expect(flattenArray(source, 1)).toEqual([1, 2, [3, kept]]);
+    expect(flattenArray(source, 2)).toEqual([1, 2, 3, kept]);
+    expect(flattenArray(source, 2)[3]).toBe(kept);
+    expect(source).toEqual([1, [2, [3, kept]]]);
+  });
+
+  test("depth 0 returns a shallow copy and keeps nested arrays", () => {
+    const nested = [2, [3]];
+    const source = [1, nested, []];
+    const result = flattenArray(source, 0);
+
+    expect(result).toEqual([1, nested, []]);
+    expect(result).not.toBe(source);
+    expect(result[1]).toBe(nested);
+    expect(source).toEqual([1, nested, []]);
+  });
+
+  test("flattens empty arrays only up to the depth limit", () => {
+    expect(flattenArray([[]], 0)).toEqual([[]]);
+    expect(flattenArray([[]], 1)).toEqual([]);
+    expect(flattenArray([[], [1, []]], 1)).toEqual([1, []]);
+  });
+
+  test("does not validate values nested below the depth limit", () => {
+    expect(flattenArray([1, [2, ["nope"]]], 1)).toEqual([1, 2, ["nope"]]);
+  });
+
+  test("still rejects a non-integer or hole at a visited level", () => {
+    expect(() => flattenArray([1, "x"], 0)).toThrow(
+      new TypeError("Array must contain only integers or nested arrays")
+    );
+    expect(() => flattenArray([1, ["x"]], 1)).toThrow(
+      new TypeError("Array must contain only integers or nested arrays")
+    );
+    expect(() => flattenArray([1, , [2]], 0)).toThrow(
+      new TypeError("Array must contain only integers or nested arrays")
+    );
+  });
+
+  test("does not walk a cycle that sits past the depth limit", () => {
+    const inner = [2];
+    inner.push(inner);
+
+    const result = flattenArray([1, inner], 0);
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe(1);
+    expect(result[1]).toBe(inner);
+  });
+
+  test("keeps a self-reference that sits on the last flattened level", () => {
+    const inner = [2];
+    inner.push(inner);
+
+    const result = flattenArray([1, inner], 1);
+
+    expect(result).toHaveLength(3);
+    expect(result[0]).toBe(1);
+    expect(result[1]).toBe(2);
+    expect(result[2]).toBe(inner);
+  });
+
+  test("throws when flattening would enter a cycle", () => {
+    const cycle = [1];
+    cycle.push(cycle);
+
+    expect(() => flattenArray(cycle, 1)).toThrow(
+      new TypeError("Array must not contain circular references")
+    );
+
+    const inner = [2];
+    inner.push(inner);
+
+    expect(() => flattenArray([1, inner], 2)).toThrow(
+      new TypeError("Array must not contain circular references")
+    );
+  });
+
+  test("treats negative zero as depth 0", () => {
+    expect(flattenArray([1, [2, [3]]], -0)).toEqual([1, [2, [3]]]);
+  });
+
+  test.each([
+    ["negative", -1],
+    ["fractional", 1.5],
+    ["NaN", NaN],
+    ["negative Infinity", -Infinity],
+    ["a numeric string", "1"],
+    ["null", null],
+    ["a boolean", true],
+    ["a bigint", 1n],
+  ])("throws TypeError when depth is %s", (_label, depth) => {
+    expect(() => flattenArray([1, [2]], depth)).toThrow(
+      new TypeError("Depth must be a non-negative integer or Infinity")
+    );
+  });
+
+  test("reports a non-array input before an invalid depth", () => {
+    expect(() => flattenArray("nope", -1)).toThrow(
+      new TypeError("Input must be an array")
+    );
+  });
+
+  test("flattens a reused nested array up to the depth limit", () => {
+    const inner = [1, [2]];
+
+    expect(flattenArray([inner, 3, inner], 1)).toEqual([1, [2], 3, 1, [2]]);
+    expect(inner).toEqual([1, [2]]);
+  });
+
+  test("does not leak values between limited and full calls", () => {
+    expect(flattenArray([1, [2, [3]]], 1)).toEqual([1, 2, [3]]);
+    expect(flattenArray([1, [2, [3]]])).toEqual([1, 2, 3]);
+  });
+});

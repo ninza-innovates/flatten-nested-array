@@ -26,6 +26,7 @@ npm install
 npm test
 ```
 
+
 Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code.
 
 Add or update a test when you change behavior. `npm test` should pass before you open a pull request.
@@ -49,10 +50,11 @@ The prompt reads one JSON value. A nested array of integers prints `Flattened Re
 
 `flattenArray` returns a new array and does not mutate its input.
 
-- The argument must be an array. Otherwise throw `TypeError` with the message `Input must be an array`.
-- Every leaf must pass `Number.isInteger`. Otherwise throw `TypeError` with the message `Array must contain only integers or nested arrays`.
-- An array that appears again on the current path throws `TypeError` with the message `Array must not contain circular references`. The same nested array may appear in more than one place when that does not form a cycle.
-- Empty arrays contribute no values. Integers stay in left-to-right order.
+- The first argument must be an array. Otherwise throw `TypeError` with the message `Input must be an array`.
+- An optional `depth` limits how many levels are flattened. It defaults to `Infinity`. `0` copies the top level only. `depth` must be a non-negative integer or `Infinity`; otherwise throw `TypeError` with the message `Depth must be a non-negative integer or Infinity`. Arrays past that limit are returned as they were passed and are not validated further.
+- Every visited leaf must pass `Number.isInteger`. Otherwise throw `TypeError` with the message `Array must contain only integers or nested arrays`.
+- An array that appears again on the current path throws `TypeError` with the message `Array must not contain circular references`. The same nested array may appear in more than one place when that does not form a cycle. A cycle past `depth` is left in place.
+- Empty arrays that are flattened contribute no values. Integers stay in left-to-right order.
 
 ## License
 

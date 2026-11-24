@@ -1,40 +1,57 @@
 /**
  * An arbitrarily nested array whose leaves are integers.
  *
- * Arrays may be empty and may nest to any depth. At runtime every leaf
- * must pass `Number.isInteger`.
+ * Arrays may be empty and may nest to any depth. At runtime every visited
+ * leaf must pass `Number.isInteger`.
  *
  * @typedef {ReadonlyArray<number | NestedIntegerArray>} NestedIntegerArray
  */
 
 /**
- * Flattens an arbitrarily nested array of integers into a new array.
+ * Flattens a nested array of integers into a new array.
  *
  * Integers are collected from left to right. The input is not mutated, empty
- * arrays at any depth contribute no values, and successive calls do not
- * share state. Nesting is walked with an explicit stack, so depth is not
+ * arrays that are flattened contribute no values, and successive calls do not
+ * share state. Nesting is walked with an explicit stack, so nesting is not
  * limited by the call stack.
  *
  * @param {NestedIntegerArray} arr An arbitrarily nested array of integers.
- * @returns {number[]} A new array of the integers from `arr`, in encounter order.
+ * @param {number} [depth=Infinity] How many levels of nesting to flatten.
+ * `Infinity` flattens completely. `0` copies the top level only. A nested
+ * array past this limit is the original array and is not validated further.
+ * Must be a non-negative integer or `Infinity`.
+ * @returns {Array<number | NestedIntegerArray>} Integers from `arr`, in
+ * encounter order. Nested arrays remain only where `depth` stops the walk.
  * @throws {TypeError} If `arr` is not an array ("Input must be an array").
- * @throws {TypeError} If a nested value is neither an integer nor an array
+ * @throws {TypeError} If `depth` is not a non-negative integer or `Infinity`
+ * ("Depth must be a non-negative integer or Infinity").
+ * @throws {TypeError} If a visited value is neither an integer nor an array
  * ("Array must contain only integers or nested arrays").
- * @throws {TypeError} If an array refers back to itself through the current
- * path ("Array must not contain circular references"). The same nested array
- * may still appear in more than one place.
+ * @throws {TypeError} If an entered array refers back to itself through the
+ * current path ("Array must not contain circular references"). The same
+ * nested array may still appear in more than one place. A cycle past
+ * `depth` is left in place.
  * @example
  * flattenArray([[1, 2, [3]], 4]);
  * // => [1, 2, 3, 4]
+ * @example
+ * flattenArray([1, [2, [3, [4]]]], 1);
+ * // => [1, 2, [3, [4]]]
  */
-function flattenArray(arr) {
+function flattenArray(arr, depth = Infinity) {
   if (!Array.isArray(arr)) {
     throw new TypeError("Input must be an array");
   }
 
+  if (depth !== Infinity && !(Number.isInteger(depth) && depth >= 0)) {
+    throw new TypeError(
+      "Depth must be a non-negative integer or Infinity"
+    );
+  }
+
   const result = [];
   const ancestors = new WeakSet();
-  const stack = [{ array: arr, index: 0 }];
+  const stack = [{ array: arr, index: 0, depth }];
   ancestors.add(arr);
 
   while (stack.length > 0) {
@@ -51,11 +68,14 @@ function flattenArray(arr) {
     frame.index += 1;
 
     if (Array.isArray(item)) {
-      if (ancestors.has(item)) {
+      if (frame.depth === 0) {
+        result.push(item);
+      } else if (ancestors.has(item)) {
         throw new TypeError("Array must not contain circular references");
+      } else {
+        ancestors.add(item);
+        stack.push({ array: item, index: 0, depth: frame.depth - 1 });
       }
-      ancestors.add(item);
-      stack.push({ array: item, index: 0 });
     } else if (Number.isInteger(item)) {
       result.push(item);
     } else {
