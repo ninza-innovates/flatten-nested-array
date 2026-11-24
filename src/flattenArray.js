@@ -91,7 +91,11 @@ function flattenArray(arr, depth = Infinity) {
 module.exports = flattenArray;
 
 /**
- * Interactive CLI Mode
+ * Interactive CLI Mode.
+ *
+ * Reads one JSON value. A successful flatten prints the result and exits 0.
+ * Invalid JSON or a value `flattenArray` rejects prints `Error:` on stderr
+ * and exits 1, so a script can tell failure from success.
  */
 if (require.main === module) {
   const readline = require("readline");
@@ -110,6 +114,7 @@ if (require.main === module) {
         console.log("Flattened Result:", result);
       } catch (error) {
         console.error("Error:", error.message);
+        process.exitCode = 1;
       } finally {
         rl.close();
       }

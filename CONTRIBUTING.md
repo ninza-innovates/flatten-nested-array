@@ -26,7 +26,8 @@ npm install
 npm test
 ```
 
-Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, circular references, and the optional depth limit. The CLI tests spawn `src/flattenArray.js` and check stdout and stderr.
+
+Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code.
 
 Add or update a test when you change behavior. `npm test` should pass before you open a pull request.
 
@@ -36,7 +37,7 @@ Add or update a test when you change behavior. `npm test` should pass before you
 npm start
 ```
 
-The prompt reads one JSON value. A nested array of integers prints `Flattened Result:`. Invalid JSON, a non-array value, or a non-integer element prints `Error:` on stderr. Requiring the module from other code does not start the prompt.
+The prompt reads one JSON value. A nested array of integers prints `Flattened Result:` and the process exits 0. Invalid JSON, a non-array value, or a non-integer element prints `Error:` on stderr and the process exits 1. Requiring the module from other code does not start the prompt.
 
 ## Project layout
 
