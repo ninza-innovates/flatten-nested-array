@@ -1,5 +1,6 @@
 const { spawnSync } = require("child_process");
 const path = require("path");
+const { inspect } = require("util");
 
 const script = path.join(__dirname, "..", "src", "flattenArray.js");
 
@@ -55,5 +56,21 @@ describe("interactive CLI", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Flattened Result: []");
     expect(result.stderr).toBe("");
+  });
+
+  test("prints every element past the default inspect limit", () => {
+    const values = Array.from({ length: 101 }, (_, index) => index);
+    const result = runCli(
+      `${JSON.stringify(values.map((value) => [value]))}\n`
+    );
+    const expected = inspect(values, {
+      maxArrayLength: Infinity,
+      colors: false,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain(`Flattened Result: ${expected}`);
+    expect(result.stdout).not.toContain("more items");
   });
 });

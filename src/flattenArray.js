@@ -93,12 +93,13 @@ module.exports = flattenArray;
 /**
  * Interactive CLI Mode.
  *
- * Reads one JSON value. A successful flatten prints the result and exits 0.
- * Invalid JSON or a value `flattenArray` rejects prints `Error:` on stderr
- * and exits 1, so a script can tell failure from success.
+ * Reads one JSON value. A successful flatten prints every element of the
+ * result and exits 0. Invalid JSON or a value `flattenArray` rejects prints
+ * `Error:` on stderr and exits 1, so a script can tell failure from success.
  */
 if (require.main === module) {
   const readline = require("readline");
+  const { inspect } = require("util");
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -111,7 +112,11 @@ if (require.main === module) {
       try {
         const parsedInput = JSON.parse(answer);
         const result = flattenArray(parsedInput);
-        console.log("Flattened Result:", result);
+        // Passing the array itself would stop at util.inspect's default of 100 elements.
+        console.log(
+          "Flattened Result:",
+          inspect(result, { maxArrayLength: Infinity, colors: false })
+        );
       } catch (error) {
         console.error("Error:", error.message);
         process.exitCode = 1;
