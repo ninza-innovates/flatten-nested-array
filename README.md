@@ -200,6 +200,8 @@ Enter your input (must be valid JSON format).
 
     Flattened Result: [ 1, 2, 3, 4 ]
 
+The printed array includes every element, including results longer than 100 integers.
+
 ------------------------------------------------------------------------
 
 ## 🧪 Running Tests
