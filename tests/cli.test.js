@@ -58,6 +58,42 @@ describe("interactive CLI", () => {
     expect(result.stderr).toBe("");
   });
 
+  test("flattens JSON with no trailing newline", () => {
+    const result = runCli("[[1,2,[3]],4]");
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Flattened Result: [ 1, 2, 3, 4 ]");
+    expect(result.stderr).toBe("");
+  });
+
+  test("flattens a pretty-printed JSON document", () => {
+    const result = runCli("[\n  [1, 2],\n  [3]\n]\n");
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Flattened Result: [ 1, 2, 3 ]");
+    expect(result.stderr).toBe("");
+  });
+
+  test.each([
+    ["empty", ""],
+    ["whitespace", "   "],
+    ["invalid JSON", "not-json"],
+  ])("exits 1 when piped stdin is %s and has no newline", (_label, input) => {
+    const result = runCli(input);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^Error: /);
+    expect(result.stdout).not.toContain("Flattened Result:");
+  });
+
+  test("exits 1 when extra text follows the JSON value", () => {
+    const result = runCli("[1,[2]]\nextra\n");
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/^Error: /);
+    expect(result.stdout).not.toContain("Flattened Result:");
+  });
+
   test("prints every element past the default inspect limit", () => {
     const values = Array.from({ length: 101 }, (_, index) => index);
     const result = runCli(

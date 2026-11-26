@@ -202,6 +202,8 @@ Enter your input (must be valid JSON format).
 
 The printed array includes every element, including results longer than 100 integers.
 
+A terminal session reads the single line entered at the prompt. Piped input is read until end of file as one JSON value, so a pretty-printed array works and a trailing newline is optional. Empty input, invalid JSON, and text after that JSON value print `Error:` on stderr and exit 1.
+
 ------------------------------------------------------------------------
 
 ## 🧪 Running Tests
