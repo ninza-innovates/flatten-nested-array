@@ -37,7 +37,7 @@ Add or update a test when you change behavior. `npm test` should pass before you
 npm start
 ```
 
-The prompt reads one JSON value. A nested array of integers prints `Flattened Result:` and every element, then the process exits 0. Invalid JSON, a non-array value, or a non-integer element prints `Error:` on stderr and the process exits 1. Requiring the module from other code does not start the prompt.
+In a terminal, the prompt reads one line of JSON. Piped input is read until end of file as a single JSON value, including pretty-printed arrays and values with no trailing newline. A nested array of integers prints `Flattened Result:` and every element, then the process exits 0. Empty input, invalid JSON, trailing non-JSON text, a non-array value, or a non-integer element prints `Error:` on stderr and the process exits 1. Requiring the module from other code does not start the prompt.
 
 ## Project layout
 
