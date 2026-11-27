@@ -93,12 +93,15 @@ module.exports = flattenArray;
 /**
  * Interactive CLI Mode.
  *
- * In a terminal, the prompt reads one line of JSON. Piped input is read
- * until end of file as a single JSON value, so pretty-printed arrays and
- * values with no trailing newline are accepted. A successful flatten prints
- * every element of the result and exits 0. Empty input, invalid JSON,
- * trailing non-JSON text, or a value `flattenArray` rejects prints `Error:`
- * on stderr and exits 1, so a script can tell failure from success.
+ * In a terminal, the prompt reads one line of JSON. Ctrl+D with no line,
+ * or a terminal that closes before Enter, is empty input unless text was
+ * already typed; that text is parsed. Ctrl+C cancels the prompt and exits
+ * 130. Piped input is read until end of file as a single JSON value, so
+ * pretty-printed arrays and values with no trailing newline are accepted.
+ * A successful flatten prints every element of the result and exits 0.
+ * Empty input, invalid JSON, trailing non-JSON text, or a value
+ * `flattenArray` rejects prints `Error:` on stderr and exits 1, so a
+ * script can tell failure from success.
  */
 if (require.main === module) {
   const { inspect } = require("util");
@@ -127,7 +130,28 @@ if (require.main === module) {
       output: process.stdout,
     });
 
+    // Enter submits the line. Ctrl+C cancels. A close before Enter, such as
+    // Ctrl+D or the terminal ending, parses text already typed. Settle once
+    // so that close does not parse a line Enter or Ctrl+C already handled.
+    let settled = false;
+
+    rl.on("SIGINT", () => {
+      if (settled) return;
+      settled = true;
+      process.exitCode = 130;
+      process.stdout.write("\n");
+      rl.close();
+    });
+
+    rl.once("close", () => {
+      if (settled) return;
+      settled = true;
+      finish(rl.line);
+    });
+
     rl.question(prompt, (answer) => {
+      if (settled) return;
+      settled = true;
       finish(answer);
       rl.close();
     });

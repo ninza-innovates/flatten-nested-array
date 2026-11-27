@@ -27,7 +27,7 @@ npm test
 ```
 
 
-Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code.
+Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code. The terminal-prompt tests open a pty with `python3`, which the Ubuntu image used by CI provides.
 
 Add or update a test when you change behavior. `npm test` should pass before you open a pull request.
 
@@ -37,7 +37,7 @@ Add or update a test when you change behavior. `npm test` should pass before you
 npm start
 ```
 
-In a terminal, the prompt reads one line of JSON. Piped input is read until end of file as a single JSON value, including pretty-printed arrays and values with no trailing newline. A nested array of integers prints `Flattened Result:` and every element, then the process exits 0. Empty input, invalid JSON, trailing non-JSON text, a non-array value, or a non-integer element prints `Error:` on stderr and the process exits 1. Requiring the module from other code does not start the prompt.
+In a terminal, the prompt reads one line of JSON. Ctrl+D with nothing typed, and a terminal that closes before Enter, count as empty input. Text already typed when that happens is parsed. Ctrl+C cancels the prompt and exits 130. Piped input is read until end of file as a single JSON value, including pretty-printed arrays and values with no trailing newline. A nested array of integers prints `Flattened Result:` and every element, then the process exits 0. Empty input, invalid JSON, trailing non-JSON text, a non-array value, or a non-integer element prints `Error:` on stderr and the process exits 1. Requiring the module from other code does not start the prompt.
 
 ## Project layout
 
