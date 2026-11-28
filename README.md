@@ -166,9 +166,11 @@ rather than the call stack.
 TypeScript callers are typed by `src/flattenArray.d.ts`. The input type is
 `flattenArray.NestedIntegerArray`. TypeScript has no integer type, so
 leaves are declared as `number`; the runtime still requires
-`Number.isInteger` for every leaf it visits. Passing `depth` types the
-result as an array that may still contain nested arrays. Omitting `depth`
-types the result as `number[]`.
+`Number.isInteger` for every leaf it visits. Omitting `depth`, or passing
+`undefined`, types the result as `number[]`. Passing a numeric `depth` types
+the result as an array that may still contain nested arrays. A `depth` value
+whose type is `number | undefined` uses that wider result, because the value
+might be a number.
 
 ------------------------------------------------------------------------
 
@@ -215,6 +217,8 @@ npm test
 ```
 
 If everything is working correctly, you should see all tests passing.
+
+`npm run typecheck` checks the TypeScript declarations in `src/flattenArray.d.ts`.
 
 ------------------------------------------------------------------------
 
@@ -270,6 +274,7 @@ Expected output:
     │
     ├── tests/
     │   ├── flattenArray.test.js
+    │   ├── flattenArray.types.ts
     │   └── cli.test.js
     │
     ├── .github/workflows/ci.yml
@@ -277,6 +282,7 @@ Expected output:
     ├── LICENSE
     ├── package.json
     ├── package-lock.json
+    ├── tsconfig.json
     ├── .gitignore
     └── README.md
 

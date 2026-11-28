@@ -24,12 +24,12 @@ npm install
 
 ```bash
 npm test
+npm run typecheck
 ```
 
+Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code. The terminal-prompt tests open a pty with `python3`, which the Ubuntu image used by CI provides. `npm run typecheck` checks `src/flattenArray.d.ts` with `tests/flattenArray.types.ts`. Omitting `depth` or passing `undefined` is typed as `number[]`. A numeric `depth`, including a `number | undefined` value, is typed as an array that may still contain nested arrays.
 
-Jest loads `tests/flattenArray.test.js` and `tests/cli.test.js`. The library tests cover nesting (including chains deeper than the call stack), empty arrays, integer bounds, rejected values, and circular references. The CLI tests spawn `src/flattenArray.js` and check stdout, stderr, and the exit code. The terminal-prompt tests open a pty with `python3`, which the Ubuntu image used by CI provides.
-
-Add or update a test when you change behavior. `npm test` should pass before you open a pull request.
+Add or update a test when you change behavior. `npm test` and `npm run typecheck` should pass before you open a pull request.
 
 ## Running the CLI
 
@@ -43,8 +43,8 @@ In a terminal, the prompt reads one line of JSON. Ctrl+D with nothing typed, and
 
 - `src/flattenArray.js` — implementation and the interactive CLI
 - `src/flattenArray.d.ts` — TypeScript declaration; keep it aligned with the runtime contract
-- `tests/` — Jest tests
-- `.github/workflows/ci.yml` — runs `npm ci` and `npm test` on Node.js 26 for every push and pull request
+- `tests/` — Jest tests and `flattenArray.types.ts`, which `npm run typecheck` compiles
+- `.github/workflows/ci.yml` — runs `npm ci`, `npm run typecheck`, and `npm test` on Node.js 26 for every push and pull request
 
 ## Behavior to preserve
 

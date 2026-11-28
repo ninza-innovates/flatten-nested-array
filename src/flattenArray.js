@@ -17,11 +17,13 @@
  *
  * @param {NestedIntegerArray} arr An arbitrarily nested array of integers.
  * @param {number} [depth=Infinity] How many levels of nesting to flatten.
- * `Infinity` flattens completely. `0` copies the top level only. A nested
- * array past this limit is the original array and is not validated further.
- * Must be a non-negative integer or `Infinity`.
+ * `Infinity` flattens completely. Omitting `depth` or passing `undefined`
+ * does that. `0` copies the top level only. A nested array past this limit
+ * is the original array and is not validated further. Must be a non-negative
+ * integer or `Infinity`.
  * @returns {Array<number | NestedIntegerArray>} Integers from `arr`, in
  * encounter order. Nested arrays remain only where `depth` stops the walk.
+ * When `depth` is omitted or `undefined`, the array contains only integers.
  * @throws {TypeError} If `arr` is not an array ("Input must be an array").
  * @throws {TypeError} If `depth` is not a non-negative integer or `Infinity`
  * ("Depth must be a non-negative integer or Infinity").
